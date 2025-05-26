@@ -2,42 +2,65 @@
 
 function noIterate($strArr)
 {
-    $n = $strArr[0];
-    $k = $strArr[1];
-    $need = array_count_values(str_split($k));
-    $have = [];
-    $needCount = count($need);
-    $haveCount = 0;
+    $N = $strArr[0];
+    $K = $strArr[1];
+    $lenN = strlen($N);
+    $lenK = strlen($K);
+    
+    // Contar los caracteres en K
+    $charCountK = array_count_values(str_split($K));
+    
     $left = 0;
-    $minLen = PHP_INT_MAX;
-    $strArr = "";
-
-    for ($right = 0; $right < strlen($n); $right++) {
-        $char = $n[$right];
-        if (isset($need[$char])) {
-            $have[$char] = ($have[$char] ?? 0) + 1;
-            if ($have[$char] == $need[$char]) {
-                $haveCount++;
+    $minLength = PHP_INT_MAX;
+    $result = "";
+    $count = 0;
+    $charCountWindow = [];
+    
+    // Inicializar contador de caracteres en la ventana
+    foreach ($charCountK as $char => $cnt) {
+        $charCountWindow[$char] = 0;
+    }
+    
+    for ($right = 0; $right < $lenN; $right++) {
+        $currentChar = $N[$right];
+        
+        // Si el carácter está en K, incrementar su conteo en la ventana
+        if (isset($charCountK[$currentChar])) {
+            $charCountWindow[$currentChar]++;
+            
+            // Solo incrementar el contador total si no hemos excedido el conteo necesario
+            if ($charCountWindow[$currentChar] <= $charCountK[$currentChar]) {
+                $count++;
             }
         }
-
-        while ($haveCount == $needCount) {
-            if (($right - $left + 1) < $minLen) {
-                $minLen = $right - $left + 1;
-                $strArr = substr($n, $left, $minLen);
+        
+        // Intentar mover el puntero izquierdo mientras mantenemos todos los caracteres de K
+        while ($count == $lenK) {
+            $currentWindowLength = $right - $left + 1;
+            
+            // Actualizar el resultado si encontramos una ventana más pequeña
+            if ($currentWindowLength < $minLength) {
+                $minLength = $currentWindowLength;
+                $result = substr($N, $left, $currentWindowLength);
             }
-            $leftChar = $n[$left];
-            if (isset($need[$leftChar])) {
-                $have[$leftChar]--;
-                if ($have[$leftChar] < $need[$leftChar]) {
-                    $haveCount--;
+            
+            $leftChar = $N[$left];
+            
+            // Si el carácter izquierdo está en K, reducir su conteo
+            if (isset($charCountK[$leftChar])) {
+                $charCountWindow[$leftChar]--;
+                
+                // Si el conteo cae por debajo de lo necesario, disminuir el contador total
+                if ($charCountWindow[$leftChar] < $charCountK[$leftChar]) {
+                    $count--;
                 }
             }
+            
             $left++;
         }
     }
-    // code goes here
-    return $strArr;
+    
+    return $result;
 }
 
 // keep this function call here
